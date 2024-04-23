@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,12 +9,47 @@ public class Player : MonoBehaviour
     [SerializeField] private List<GameObject> cube;
     [SerializeField] private bool index = false;
     [SerializeField] private bool isVertical;
+    [SerializeField] private LayerMask layerMask;
     bool isMoving;
 
     // Update is called once per frame
     void Update()
     {
-        if(isMoving) return;
+        // Lấy vị trí của khối hộp
+        Vector3 cubePosition = transform.position;
+
+        // Mảng chứa các hướng của các tia raycast
+        Vector3[] directions = {
+            Vector3.up,         // Lên trên
+            Vector3.down,       // Xuống dưới
+            Vector3.forward,    // Về phía trước
+            Vector3.back,       // Về phía sau
+            Vector3.left,       // Sang trái
+            Vector3.right       // Sang phải
+        };
+
+        // Vòng lặp để bắn ra các tia raycast từ mỗi mặt của khối hộp
+        foreach (Vector3 direction in directions)
+        {
+            // Bắn ra raycast từ vị trí của khối hộp theo từng hướng
+            RaycastHit hit;
+            if (Physics.Raycast(cubePosition, direction, out hit, Mathf.Infinity, layerMask))
+            {
+                // Xử lý khi raycast va chạm với một đối tượng
+                Debug.DrawRay(cubePosition + new Vector3(0, 0.5f, 0), direction * hit.distance, Color.yellow);
+                Debug.DrawRay(cubePosition - new Vector3(0, 0.5f, 0), direction * hit.distance, Color.yellow);
+            }
+            else
+            {
+                // Xử lý khi raycast không va chạm với bất kỳ đối tượng nào
+                Debug.DrawRay(cubePosition + new Vector3(0, 0.5f, 0), direction * 10, Color.white);
+                Debug.DrawRay(cubePosition - new Vector3(0, 0.5f, 0), direction * 10, Color.white);
+            }
+        }
+
+
+        //Xu ly di chuyen
+        if (isMoving) return;
 
         if (Mathf.Abs(cube[0].transform.position.x - cube[1].transform.position.x) < 0.01f && Mathf.Abs(cube[0].transform.position.z - cube[1].transform.position.z) < 0.01f)
         {
@@ -27,7 +62,7 @@ public class Player : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.A))
         {
-            if(isVertical)
+            if (isVertical)
             {
                 Assemble(Vector3.left, Convert.ToInt32(DirectionVertical()));
             }
@@ -116,5 +151,10 @@ public class Player : MonoBehaviour
             index = true;
         }
         return index;
+    }
+
+    public void CheckLose()
+    {
+
     }
 }
